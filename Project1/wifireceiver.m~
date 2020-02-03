@@ -2,6 +2,7 @@
 % output = WiFi packet
 % Inputs: message = text message, snr = signal to noise ratio, 
 % level = number of stages of encoding
+
 function output = wifireceiver(packet, level)
     output = packet;
     
@@ -15,21 +16,20 @@ function output = wifireceiver(packet, level)
     
     %% Level #1: undo interleaving
     if (level >= 1)
-        output = level1(packet);
+        
     end
 end
 
 function output1 = level1(packet)
-    nfft = 64;
-    length_part = packet(1 : 2 * nfft);
-    data_part = packet(2 * nfft + 1 : length(packet));
+    length_part = output(1 : 2 * nfft);
+    data_part = output(2 * nfft + 1 : length(output));
     UnInterleave = reshape(reshape([1:2*nfft], 2 * nfft / 4, []).', [], 1);
     
     nsym = length(data_part) / (2 * nfft);
-    output1 = [];
+    output = [];
     for ii = 1 : nsym
         symbol = data_part((ii - 1) * 2 * nfft + 1 : ii * 2 * nfft);
-        output1 = [output1, symbol(UnInterleave)];
+        output = [output, symbol(UnInterleave)];
     end
 
     % calculate length of message:
@@ -38,14 +38,14 @@ function output1 = level1(packet)
         message_length = message_length + length_part(i) * (2 ^ (2 * nfft - i));
     end
 
-    data_part = output1;
+    data_part = output;
     data_part = data_part(1 : message_length * 8);
-    output1 = '';
+    output = '';
     for a = 1 : 8 : length(data_part)
         curr_char = 0;
         for b = 0 : 7
             curr_char = curr_char + data_part(a + b) * (2 ^ (7 - b));
         end
-        output1 = [output1, char(curr_char)];
+        output = [output, char(curr_char)];
     end
 end
