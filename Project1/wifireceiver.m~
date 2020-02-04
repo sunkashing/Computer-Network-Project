@@ -5,9 +5,14 @@
 function output = wifireceiver(packet, level)
     output = packet;
     
+    %% Level #4:  remove random padding and noise
+    if (level >= 4)
+        output = level4(output);
+    end
+    
     %% Level #3:  unpack OFDM packet
     if (level >= 3)
-        output = level3(output)
+        output = level3(output);
     end
     
     %% Level #2: convolutional decoding
@@ -22,11 +27,49 @@ function output = wifireceiver(packet, level)
 end
 
 
+function output4 = level4(packet)
+    nfft = 64;
+    packet = packet.';
+    packet_abs = abs(packet);
+    threshold = 10;
+    start = 0;
+    [pks, locs] = findpeaks(packet_abs);
+    data_pks_cnt = 1;
+    for i = 1 : length(pks)
+        if (pks(i) > threshold)
+            data_pks(data_pks_cnt) = pks(i);
+            data_pks_locs(data_pks_cnt) = locs(i);
+            data_pks_cnt = data_pks_cnt + 1;
+        end
+    end
+    start = data_pks_locs(1) - 1
+    output4 = packet(data_pks_locs(1) : data_pks_locs(data_pks_cnt - 1));
+    data_len = length(output4);
+    padding = 0;
+    tmp = mod(data_len, nfft);
+    if (tmp ~= 0)
+        padding = nfft - tmp;
+    end
+    padding_0 = zeros(1, padding);
+    output4 = [output4, padding_0];
+    
+    
+end
+
+
+function sliding_window(packet, threshold)
+    
+end
+
+
 function output3 = level3(packet)
     nfft = 64;
     nysm = length(packet) / nfft;
+    output3 = [];
     for ii = 1 : nysm
         symbol = packet((ii - 1) * nfft + 1 : ii * nfft);
+        output3 = [output3, ifft(symbol)];
+    end
     
 end
 
@@ -40,7 +83,7 @@ function output2 = level2(packet)
     output2 = output2(2 * nfft + 1 : end);
     message_part = output2(2 * nfft + 1 : end);
     decodedData = vitdec(message_part, Trellis, 15,'trunc','hard');
-    output2 = [output2(1 : 2 * nfft).', decodedData.'];
+    output2 = [output2(1 : 2 * nfft), decodedData];
 end
 
 

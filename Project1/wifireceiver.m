@@ -2,8 +2,13 @@
 % output = WiFi packet
 % Inputs: message = text message, snr = signal to noise ratio, 
 % level = number of stages of encoding
-function output = wifireceiver(packet, level)
+function [output, message_length, padding_nums] = wifireceiver(packet, level)
     output = packet;
+    
+    %% Level #4:  remove random padding and noise
+    if (level >= 4)
+        [output, padding_nums] = level4(output);
+    end
     
     %% Level #3:  unpack OFDM packet
     if (level >= 3)
@@ -17,8 +22,38 @@ function output = wifireceiver(packet, level)
     
     %% Level #1: undo interleaving
     if (level >= 1)
-        output = level1(output);
+        [output, message_length] = level1(output);
     end
+end
+
+
+function [output4, padding_nums] = level4(packet)
+    nfft = 64;
+    packet = packet.';
+    packet_abs = abs(packet);
+    threshold = 10;
+    start = 0;
+    [pks, locs] = findpeaks(packet_abs);
+    data_pks_cnt = 1;
+    for i = 1 : length(pks)
+        if (pks(i) > threshold)
+            data_pks(data_pks_cnt) = pks(i);
+            data_pks_locs(data_pks_cnt) = locs(i);
+            data_pks_cnt = data_pks_cnt + 1;
+        end
+    end
+    padding_nums = data_pks_locs(1) - 1;
+    output4 = packet(data_pks_locs(1) : data_pks_locs(data_pks_cnt - 1));
+    data_len = length(output4);
+    padding = 0;
+    tmp = mod(data_len, nfft);
+    if (tmp ~= 0)
+        padding = nfft - tmp;
+    end
+    padding_0 = zeros(1, padding);
+    output4 = [output4, padding_0];
+    
+    
 end
 
 
@@ -28,7 +63,7 @@ function output3 = level3(packet)
     output3 = [];
     for ii = 1 : nysm
         symbol = packet((ii - 1) * nfft + 1 : ii * nfft);
-        output3 = [output3, ifft(symbol).'];
+        output3 = [output3, ifft(symbol)];
     end
     
 end
@@ -52,7 +87,7 @@ end
 % end
 
 
-function output1 = level1(packet)
+function [output1, message_length] = level1(packet)
     nfft = 64;
     length_part = packet(1 : 2 * nfft);
     data_part = packet(2 * nfft + 1 : length(packet));
