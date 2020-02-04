@@ -106,7 +106,7 @@ function output = wifitransmitter(message, level, snr)
     if (level >= 4)
         % Lets add some (random) empty space to the beginning and end
         noise_pad_begin = zeros(1, round(rand*1000)).';
-        noise_pad_begin_num = length(noise_pad_begin)
+        noise_pad_begin_num = length(noise_pad_begin);
         noise_pad_end = zeros(1, round(rand*1000)).';
         length(noise_pad_begin);
         output = [noise_pad_begin; output; noise_pad_end];

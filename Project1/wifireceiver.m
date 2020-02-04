@@ -1,6 +1,8 @@
+
 %% wifireceiver: Receives a Wi-Fi packet from transimitter
-% output = WiFi packet
-% Inputs: message = text message, snr = signal to noise ratio, 
+% output: output = message, message_length = length of message,
+% padding_nums = numbers of pre-padding zeros
+% Inputs: packet = WiFi packet, 
 % level = number of stages of encoding
 function [output, message_length, padding_nums] = wifireceiver(packet, level)
     output = packet;
@@ -31,8 +33,7 @@ function [output4, padding_nums] = level4(packet)
     nfft = 64;
     packet = packet.';
     packet_abs = abs(packet);
-    threshold = 10;
-    start = 0;
+    threshold = 7;
     [pks, locs] = findpeaks(packet_abs);
     data_pks_cnt = 1;
     for i = 1 : length(pks)
