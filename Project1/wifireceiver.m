@@ -5,19 +5,52 @@
 function output = wifireceiver(packet, level)
     output = packet;
     
-    
+    %% Level #3:  unpack OFDM packet
+    if (level >= 3)
+        output = level3(output);
+    end
     
     %% Level #2: convolutional decoding
-    
-    
-    
-    
+    if (level >= 2)
+        output = level2(output);
+    end
     
     %% Level #1: undo interleaving
     if (level >= 1)
-        output = level1(packet);
+        output = level1(output);
     end
 end
+
+
+function output3 = level3(packet)
+    nfft = 64;
+    nysm = length(packet) / nfft;
+    output3 = [];
+    for ii = 1 : nysm
+        symbol = packet((ii - 1) * nfft + 1 : ii * nfft);
+        output3 = [output3, ifft(symbol).'];
+    end
+    
+end
+
+
+function output2 = level2(packet)
+    nfft = 64;
+    % This is the Encoder/decoder trellis used by WiFi's turbo encoder
+    Trellis = poly2trellis(3,[7,5]);
+    
+    output2 = qamdemod(packet , 4, 'bin', 'OutputType', 'bit');
+    output2 = output2(2 * nfft + 1 : end);
+    message_part = output2(2 * nfft + 1 : end);
+    decodedData = vitdec(message_part, Trellis, 15,'trunc','hard');
+    output2 = [output2(1 : 2 * nfft), decodedData];
+end
+
+
+% function decoded_data = viterbi_decode(message, trellis)
+%     
+% end
+
 
 function output1 = level1(packet)
     nfft = 64;

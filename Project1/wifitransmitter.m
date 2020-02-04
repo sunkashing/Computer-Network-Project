@@ -34,10 +34,10 @@ function output = wifitransmitter(message, level, snr)
     % mulitplicative factor 2 is due to 4 QAM modulation used later
     nfft = 64;
     % This is the Encoder/decoder trellis used by WiFi's turbo encoder
-%     Trellis = poly2trellis(3,[7,5]);
+    Trellis = poly2trellis(3,[7,5]);
     % Every WiFi packet will start with this exact preamble
     preamble = [1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1,1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1, 0, 1, 0, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1];
-%    preamble_symbols = qammod(preamble.',4,'InputType','bit');
+    preamble_symbols = qammod(preamble.',4,'InputType','bit');
    
     % Every 128 bits are mixed up like below:
     Interleave = reshape(reshape([1:2*nfft], 4, []).', [], 1);
@@ -76,6 +76,7 @@ function output = wifitransmitter(message, level, snr)
     if (level >= 2)
        
         % Next, we apply the convolutional encoder to the message part
+
        coded_message = convenc(output(2*nfft + 1:end),Trellis);
        
        % Pre-pend the length to the coded message
