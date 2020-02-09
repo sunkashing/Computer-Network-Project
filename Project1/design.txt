@@ -1,0 +1,16 @@
+Project1 brief design:
+
+a. Your docoder design:
+	Basically, I inversed the 4 levels of the transmitter. Unpacking the message from level 4 to level 1.
+
+b. How did you infer the length of the packet?
+	I used find peak function in Matlab to get the first and last peak of the incoming signal (there's a threshold peak value to determine whether is a valid peak or not), and the difference between them is the length of the packet.
+
+c. Libraries used:
+	None
+
+d. Extra capabilities you implemented:
+	None
+
+e. Extra instructions on how to execute the code:
+	None

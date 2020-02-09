@@ -83,11 +83,6 @@ function output2 = level2(packet)
 end
 
 
-% function decoded_data = viterbi_decode(message, trellis)
-%     
-% end
-
-
 function [output1, message_length] = level1(packet)
     nfft = 64;
     length_part = packet(1 : 2 * nfft);
