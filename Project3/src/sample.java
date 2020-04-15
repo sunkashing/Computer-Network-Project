@@ -139,6 +139,9 @@ public class sample implements Runnable{
 
             } else {
                 // GET or HEAD method
+                System.out.println("****");
+                System.out.println(fileRequested);
+                System.out.println("****");
                 if (fileRequested.contains("range"))
                 {
                     String str = null;
@@ -205,6 +208,9 @@ public class sample implements Runnable{
                 else
                 {
                     // GET or HEAD method
+                    System.out.println("---");
+                    System.out.println(fileRequested);
+                    System.out.println("---");
                     if (fileRequested.endsWith("/"))
                     {
                         fileRequested += DEFAULT_FILE;
